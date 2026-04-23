@@ -7,7 +7,7 @@ A two-element radio interferometer built around the Vicharak Shrike Lite FPGA bo
 
 ---
 
-## What is this?
+## Background
 
 A radio interferometer measures the correlation between signals received at two spatially separated antennas. When a radio source (like the Sun) is in view, the signals at the two antennas reach at different times. This delay is due to the time it takes for a wavefront to travel from one antenna to the other. By correlating these two signals, you can extract information about the angular size and brightness of the source that a single antenna cannot provide.
 
