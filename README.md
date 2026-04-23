@@ -3,15 +3,15 @@
 
 **FPGA-based 1-bit digital correlator for radio interferometry**
 
-A two-element radio interferometer built around a Vicharak Shrike Lite FPGA board and two commercial dish TV antennas, designed for solar observations at 11.2 GHz. This project replicates the experiment described in [Gireesh et al. (2021)](https://doi.org/10.1007/s11207-021-01871-9) from the Indian Institute of Astrophysics, Gauribidanur, which demonstrated successful radio interferometric observations of the Sun using off-the-shelf Ku-band dish antennas.
+A two-element radio interferometer built around the Vicharak Shrike Lite FPGA board and two commercial dish TV antennas, designed for solar observations at 11.2 GHz. This project replicates the experiment described in [Gireesh et al. (2021)](https://doi.org/10.1007/s11207-021-01871-9) from the Indian Institute of Astrophysics, Gauribidanur, which demonstrated successful radio interferometric observations of the Sun using off-the-shelf Ku-band dish antennas.
 
 ---
 
 ## What is this?
 
-A radio interferometer measures the correlation between signals received at two spatially separated antennas. When a radio source (like the Sun) is in view, the signals at the two antennas are slightly different versions of each other — delayed by the time it takes the wavefront to travel from one antenna to the other. By correlating these two signals, you can extract information about the angular size and brightness of the source that a single antenna cannot provide.
+A radio interferometer measures the correlation between signals received at two spatially separated antennas. When a radio source (like the Sun) is in view, the signals at the two antennas reach at different times. This delay is due to the time it takes for a wavefront to travel from one antenna to the other. By correlating these two signals, you can extract information about the angular size and brightness of the source that a single antenna cannot provide.
 
-This project implements the correlator digitally on an FPGA. The analog signal from each antenna's LNB (Low Noise Block) is downconverted to ~10 MHz, passed through a precision comparator (AD790JN) that converts it to a 1-bit digital signal (0 or 1), and then the two bitstreams are fed into an XNOR gate running at 50 MHz. The output is accumulated over a 65536-cycle window and the result — the correlation count — is sent to a host PC via the onboard RP2040 microcontroller over USB.
+This project implements the correlator digitally on an FPGA. The analog signal from each antenna's LNB (Low Noise Block) is amplified and downconverted to ~10 MHz, passed through a precision comparator (AD790JN) that converts it to a 1-bit digital signal (0 or 1), and then the two bitstreams are fed into an XNOR gate running at 50 MHz. The output is accumulated over a 65536-cycle window and the result — the correlation count — is sent to a host PC via the onboard RP2040 microcontroller over USB.
 
 This is the same architecture used in the IIA experiment, where they describe it as a "1-bit digital correlator assembled with simple digital logic circuits." Here, all of that logic lives inside the FPGA.
 
@@ -99,28 +99,6 @@ normalised = (score / 63.0 - 0.5) × 2.0
 
 This maps the output to the range [-1, +1] centred at 0 for uncorrelated signals.
 
----
-
-## Simulation
-
-The design can be simulated using Icarus Verilog and viewed in GTKWave. The testbench (`tb_radio_correlator.v`) feeds square wave inputs at different phase offsets to verify the correlator response.
-
-```bash
-iverilog -o sim.out main.v tb_radio_correlator.v
-vvp sim.out
-gtkwave radio_correlator.vcd
-```
-
-Expected simulation output:
-
-| Test case | Expected score |
-|---|---|
-| In-phase, same frequency | ~63 |
-| 90° phase shift | ~32 |
-| Anti-phase (180°) | ~0 |
-| Different frequency (1.1 MHz) | ~32 (noisy) |
-
----
 
 ## Flashing and Running
 
@@ -139,24 +117,16 @@ The FPGA will be automatically flashed from RP2040 flash memory on every power-u
 Open Arduino Serial Monitor at **115200 baud**. Correlation scores print as normalised values (-1 to +1) every time a new window completes.
 
 ### 4. Live plot on PC
-Run the Python script to see a live scrolling plot of the correlation:
+Run the Python script to see a live plot of the correlation counts.
 
-```bash
-cd correlator_plot
-python3 -m venv env
-source env/bin/activate
-pip install pyserial matplotlib
-python3 plot.py
-```
-
-Update the serial port in `plot.py` to match your system (`/dev/tty.usbmodemXXXX` on Mac, `COMx` on Windows).
+Note: Update the serial port in `plot.py` to match your system (`/dev/tty.usbmodemXXXX` on Mac, `COMx` on Windows).
 
 ---
 
 ## Science Goals
 
 ### Fringe visibility
-As the Sun drifts through the antenna beam (drift scan mode), the correlation output oscillates — these are the interference fringes. Fringe visibility is measured as:
+As the Sun drifts through the antenna beam (drift scan mode), the correlation output oscillates giving rise to interference fringes. Fringe visibility is measured as:
 
 $$V = \frac{P_{max} - P_{min}}{P_{max} + P_{min}}$$
 
@@ -185,4 +155,4 @@ https://doi.org/10.1007/s11207-021-01871-9
 
 ## License
 
-MIT License — do whatever you want with this, just don't point a dish at a 3.3 kV power line.
+MIT License.
