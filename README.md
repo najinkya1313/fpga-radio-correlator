@@ -44,7 +44,7 @@ Antenna → LNB (11.2 GHz → ~10 MHz) → AD790JN comparator → FPGA (ant_a / 
 
 ### AD790JN Wiring
 
-The AD790JN converts the analog IF signal to a clean 3.3V logic level compatible with the FPGA. VLOGIC (pin 8) must be tied to 3.3V — not 5V — to protect the FPGA GPIO pins.
+The AD790JN converts the analog IF signal to a clean 3.3V logic level compatible with the FPGA. VLOGIC (pin 8) must be tied to 3.3V to protect the FPGA GPIO pins.
 
 | AD790JN Pin | Connection |
 |---|---|
