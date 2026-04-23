@@ -1,5 +1,5 @@
 # fpga-radio-correlator
-# fpga-radio-correlator
+
 
 **FPGA-based 1-bit digital correlator for radio interferometry**
 
