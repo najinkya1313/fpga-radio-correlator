@@ -11,68 +11,9 @@ A two-element radio interferometer built around the Vicharak Shrike Lite FPGA bo
 
 A radio interferometer measures the correlation between signals received at two spatially separated antennas. When a radio source (like the Sun) is in view, the signals at the two antennas reach at different times. This delay is due to the time it takes for a wavefront to travel from one antenna to the other. By correlating these two signals, you can extract information about the angular size and brightness of the source that a single antenna cannot provide.
 
-This project implements the correlator digitally on an FPGA. The analog signal from each antenna's LNB (Low Noise Block) is amplified and downconverted to ~10 MHz, passed through a precision comparator (AD790JN) that converts it to a 1-bit digital signal (0 or 1), and then the two bitstreams are fed into an XNOR gate running at 50 MHz. The output is accumulated over a 65536-cycle window and the result — the correlation count — is sent to a host PC via the onboard RP2040 microcontroller over USB.
+This project implements the correlator digitally on an FPGA. The analog signal from each antenna's LNB (Low Noise Block) is amplified and downconverted to ~10 MHz, passed through a precision comparator (AD790JN) that converts it to a 1-bit digital signal (0 or 1), and then fed into the FPGA. The FPGA has two  D-type flip flop samplers and an XNOR gate for correlating the signals. The correlation output is accumulated over a 65536-cycle window and the resulting correlation counts are sent to a host PC via the onboard RP2040 microcontroller over USB.
 
 This is the same architecture used in the IIA experiment, where they describe it as a "1-bit digital correlator assembled with simple digital logic circuits." Here, all of that logic lives inside the FPGA.
-
----
-
-## Hardware
-
-| Component | Details |
-|---|---|
-| FPGA board | Vicharak Shrike Lite (Renesas SLG47910 + RP2040) |
-| Antennas | Two commercial Ku-band dish TV antennas (~62 cm diameter) |
-| LNB | Ku-band LNB, noise figure ~0.6 dB, gain ~60 dB |
-| Comparator | AD790JN (×2), one per antenna channel |
-| Observation frequency | ~11.2 GHz (downconverted to ~10 MHz IF) |
-| Baseline | ~2.5 m, east-west orientation (variable for baseline survey) |
-
-### How the signal chain works
-
-```
-Antenna → LNB (11.2 GHz → ~10 MHz) → AD790JN comparator → FPGA (ant_a / ant_b)
-                                                                      ↓
-                                                              XNOR correlator
-                                                                      ↓
-                                                            65536-cycle accumulator
-                                                                      ↓
-                                                         RP2040 reads 6-bit result
-                                                                      ↓
-                                                          USB → PC Serial Monitor
-```
-
-### AD790JN Wiring
-
-The AD790JN converts the analog IF signal to a clean 3.3V logic level compatible with the FPGA. VLOGIC (pin 8) must be tied to 3.3V to protect the FPGA GPIO pins.
-
-| AD790JN Pin | Connection |
-|---|---|
-| Pin 1 (-IN) | GND (0V threshold) |
-| Pin 2 (+IN) | IF signal from LNB |
-| Pin 3 (-VS) | -5V |
-| Pin 4 (GND) | 0V |
-| Pin 5 (LATCH) | +5V (always enabled) |
-| Pin 6 (OUT) | FPGA ant_a or ant_b pin |
-| Pin 7 (+VS) | +5V |
-| Pin 8 (VLOGIC) | 3.3V from Shrike board |
-
-### Shrike Lite IO Mapping
-
-| Signal | FPGA Pin (Fxx) | RP2040 GPIO | Notes |
-|---|---|---|---|
-| ant_a | F14 | — | From AD790 comparator #1 |
-| ant_b | F15 | — | From AD790 comparator #2 |
-| corr_0 | F6 | IO0 | Internal bus |
-| corr_1 | F4 | IO1 | Internal bus |
-| corr_2 | F3 | IO2 | Internal bus |
-| corr_3 | F5 | IO3 | Internal bus |
-| corr_4 | F17 | IO15 | Internal bus |
-| corr_5 | F18 | IO14 | Internal bus |
-| latch_out | F8 | IO10 (jumper) | 1 physical jumper wire required |
-| led | F16 | — | Onboard LED, blinks at ~1.5 Hz |
-
-A single jumper wire is required from the `F8` bottom hole to the `IO10` side header pin so the RP2040 can detect when a new correlation result is ready.
 
 ---
 
