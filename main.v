@@ -1,37 +1,36 @@
 (* top *)
 module radio_correlator (
-    (* iopad_external_pin,clkbuf_inhibit *) input  clk_in,
-    (* iopad_external_pin *) input  ant_a,
-    (* iopad_external_pin *) input  ant_b,
-    (* iopad_external_pin *) output osc_en,
-    (* iopad_external_pin *) output corr_0,
-    (* iopad_external_pin *) output corr_1,
-    (* iopad_external_pin *) output corr_2,
-    (* iopad_external_pin *) output corr_3,
-    (* iopad_external_pin *) output corr_4,
-    (* iopad_external_pin *) output corr_5,
-    (* iopad_external_pin *) output corr_0_oe,  
-    (* iopad_external_pin *) output corr_1_oe,  // ADD
-    (* iopad_external_pin *) output corr_2_oe,  // ADD
-    (* iopad_external_pin *) output corr_3_oe,  // ADD
-    (* iopad_external_pin *) output corr_4_oe,  // ADD
-    (* iopad_external_pin *) output corr_5_oe,  // ADD
-    (* iopad_external_pin *) output latch_out,
-    (* iopad_external_pin *) output latch_oe,   // ADD
-    (* iopad_external_pin *) output led,
-    (* iopad_external_pin *) output led_en
+(* iopad_external_pin,clkbuf_inhibit *) input clk_in,
+(* iopad_external_pin *) input ant_a,
+(* iopad_external_pin *) input ant_b,
+(* iopad_external_pin *) output osc_en,
+(* iopad_external_pin *) output corr_0,
+(* iopad_external_pin *) output corr_1,
+(* iopad_external_pin *) output corr_2,
+(* iopad_external_pin *) output corr_3,
+(* iopad_external_pin *) output corr_4,
+(* iopad_external_pin *) output corr_5,
+(* iopad_external_pin *) output corr_0_oe,
+(* iopad_external_pin *) output corr_1_oe,
+(* iopad_external_pin *) output corr_2_oe,
+(* iopad_external_pin *) output corr_3_oe,
+(* iopad_external_pin *) output corr_4_oe,
+(* iopad_external_pin *) output corr_5_oe,
+(* iopad_external_pin *) output latch_out,
+(* iopad_external_pin *) output latch_oe,
+(* iopad_external_pin *) output led,
+(* iopad_external_pin *) output led_en
 );
 
-localparam integer WINDOW_BITS = 16;
-localparam integer ACC_BITS    = 17;
+localparam integer WINDOW_BITS = 16;   
+localparam integer ACC_BITS    = 17;   
 
-// ── LED blink: 50 MHz / 2^25 ≈ 1.5 Hz ───────────────────────────────────
-// NOTE: clock is 50 MHz on Shrike, not 12 MHz
+// ── LED blink ─────────────────────────────────────────────────────────────
 reg [24:0] blink_counter = 0;
 always @(posedge clk_in)
     blink_counter <= blink_counter + 1;
 assign led    = blink_counter[24];
-assign led_en = 1'b1;                            // always output
+assign led_en = 1'b1;
 
 // ── Input DFFs ────────────────────────────────────────────────────────────
 reg dff_a, dff_b;
