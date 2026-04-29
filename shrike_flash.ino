@@ -1,10 +1,8 @@
 #include "Shrike.h"
+#include "hardware/gpio.h"
 ShrikeFlash shrike;
 
-const int corr_pins[6] = {0, 1, 2, 3, 15, 14};
-const int integration_windows = 256;
-long int sum = 0;
-int count = 0;
+const int xnor_pin = 0;  // RP2040 pin 0 = FPGA GPIO6
 
 void setup() {
     Serial.begin(115200);
@@ -13,22 +11,15 @@ void setup() {
     shrike.begin();
     shrike.flash("/FPGA_bitstream_MCU.bin");
     Serial.println("FPGA running.");
-    for (int i = 0; i < 6; i++) {
-        pinMode(corr_pins[i], INPUT);
-    }
+    gpio_init(xnor_pin);
+    gpio_set_dir(xnor_pin, GPIO_IN);
 }
 
 void loop() {
-    int score = 0;
-    for (int i = 0; i < 6; i++) {
-        score |= (digitalRead(corr_pins[i]) << i);
+    long count = 0;
+    unsigned long start = millis();
+    while (millis() - start < 1000) {
+        if (gpio_get(xnor_pin)) count++;
     }
-    sum += score;
-    count++;
-    if (count >= integration_windows) {
-        Serial.println(sum);
-        sum = 0;
-        count = 0;
-    }
-    delay(2);
+    Serial.println(count);
 }
