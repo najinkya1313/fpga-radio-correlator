@@ -1,5 +1,6 @@
 #include "Shrike.h"
 #include "hardware/gpio.h"
+#include "hardware/structs/sio.h"
 ShrikeFlash shrike;
 
 const int xnor_pin = 0;  // RP2040 pin 0 = FPGA GPIO6
@@ -17,9 +18,8 @@ void setup() {
 
 void loop() {
     long count = 0;
-    unsigned long start = millis();
-    while (millis() - start < 1000) {
-        if (gpio_get(xnor_pin)) count++;
+    for (long i = 0; i < 8388608; i++) {
+        count += (sio_hw->gpio_in >> xnor_pin) & 1u;
     }
-    Serial.println(count);
+    Serial.println(count/8388608);
 }
