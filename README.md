@@ -97,7 +97,7 @@ A 28-bit counter running on the full 50 MHz clock drives the onboard LED at appr
 
 Configured in the ForgeFPGA Workshop IO Planner. Only essential signals are assigned, all other GPIOs are left unconnected. 
 
-Pin assignments are made in the I/O planner of the Forge FPGA workshop. The GPIOxx_IN/GPIOxx_OUT/GPIOxx_OE pins correspond to the Fxx labels on the board. These pins can be configured as input/output pins in the I/O planner. Each output pin needs to be enabled by setting the output enable pins (OE pins) as high. The Shrike-Lite board also features an 8-bit interconnect bus between the FPGA and the RP2040. We use one of these interconnect pins to send the raw correlation counts to the RP2040 for integration. Refer to the [Shrike-Lite Pin Outs](https://vicharak-in.github.io/shrike/shrike_pinouts.html) for more details.
+Pin assignments are made in the I/O planner of the Forge FPGA workshop. The GPIOxy_IN/GPIOxy_OUT/GPIOxy_OE pins correspond to the physical Fxy labels on the board. These pins can be configured as input/output pins in the I/O planner. Each output pin needs to be enabled by setting the output enable pins (OE pins) as high. The Shrike-Lite board also features an 8-bit interconnect bus between the FPGA and the RP2040. We use one of these interconnect pins to send the raw correlation counts to the RP2040 for integration. Refer to the [Shrike-Lite Pin Outs](https://vicharak-in.github.io/shrike/shrike_pinouts.html) for more details.
 
 ### FPGA GPIO → Physical Pin Mapping
 
@@ -105,18 +105,18 @@ Pin assignments are made in the I/O planner of the Forge FPGA workshop. The GPIO
 |---|---|---|---|---|---|
 | `clk_in` | Input | OSC_CLK IOB | — | — | Internal 50 MHz oscillator — assign to OSC_CLK IOB row in IO Planner |
 | `osc_en` | Output | OSC_EN IOB | — | — | Tied HIGH — assign to OSC_EN IOB row in IO Planner |
-| `ant_a` | Input | GPIO1 | PIN 14 | 0 | 1-bit signal from Comparator A output |
-| `ant_b` | Input | GPIO2 | PIN 15 | 0 | 1-bit signal from Comparator B output |
-| `xnor_out` | Output | GPIO6 | PIN 19 | 1 | Raw XNOR result → RP2040 GPIO 0 |
-| `xnor_oe` | Output | GPIO6 OE | PIN 19 | — | Output enable — tied HIGH |
-| `led` | Output | GPIO16 | PIN 7 | 1 | Onboard LED heartbeat |
-| `led_en` | Output | GPIO16 OE | PIN 7 | — | Output enable — tied HIGH |
+| `ant_a` | Input | GPIO1 | F1 | 0 | 1-bit signal from Comparator A output |
+| `ant_b` | Input | GPIO2 | F2 | 0 | 1-bit signal from Comparator B output |
+| `xnor_out` | Output | GPIO6 | F6 | 1 | Raw XNOR result → RP2040 GPIO 0 |
+| `xnor_oe` | Output | GPIO6 OE |--| — | Output enable — tied HIGH |
+| `led` | Output | GPIO16 | F16 | 1 | Onboard LED heartbeat |
+| `led_en` | Output | GPIO16 OE | -- | — | Output enable — tied HIGH |
 
 ### RP2040 GPIO Mapping
 
 | RP2040 GPIO (Arduino) | Connected to | Notes |
 |---|---|---|
-| GPIO 0 | FPGA GPIO6 PIN 19 (`xnor_out`) | Single correlation bit, read via `sio_hw->gpio_in`.
+| GPIO 0 | FPGA GPIO6 (`xnor_out`) | Single correlation bit, read via `sio_hw->gpio_in`.
 ---
 
 ## Comparator Front-End — AD790JN
@@ -159,6 +159,8 @@ With the comparator switching correctly, Pin 7 (OUTPUT) reads approximately **1.
 ---
 
 ## Flashing and Running
+
+Refer to the [Bitstream-generation tutorial](https://vicharak-in.github.io/shrike/generating_your_first_bitstream.html) and [FPGA-flashing tutorial](https://vicharak-in.github.io/shrike/getting_started.html) by Shrike for more detailed instructions.
 
 ### 1. Generate the bitstream
 
@@ -291,6 +293,7 @@ Gireesh, G.V.S., Kathiravan, C., Barve, I.V., Ramesh, R. (2021).
 Solar Physics, 296, 121.
 https://doi.org/10.1007/s11207-021-01871-9
 
+[Introduction to Shrike Project](https://vicharak-in.github.io/shrike/introduction.html)
 ---
 
 ## License
