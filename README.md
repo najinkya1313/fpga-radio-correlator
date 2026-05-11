@@ -16,42 +16,7 @@ This project implements the correlator digitally on an FPGA. The analog signal f
 
 ## Signal Chain
 
-```
-Ku-band sky signal (10.7–12.75 GHz)
-        │
-        ▼
-[Ku-band LNB]
-  Internal LO: 9.75 GHz (low band) / 10.60 GHz (high band)
-  Output IF:   950–2150 MHz L-band
-  Gain:        55 dB  |  Noise figure: 0.3 dB
-        │
-        ▼
-[Bias Tee (12 V)]
-        │
-        ▼
-[Bandpass Filter @ 1420 MHz]
-        │
-        ▼
-[Low Noise Amplifier @ 1420 MHz]
-        │
-        ▼
-[Mixer × Local Oscillator @ 1.41 GHz]  →  1420 - 1410 = 10 MHz IF
-        │
-        ▼
-[Bandpass Filter @ 10 MHz, ~2 MHz bandwidth]
-        │
-        ▼
-[Amplifier]
-        │
-        ▼
-[AD790JN Precision Comparator]  →  1-bit digitised signal
-        │
-        ▼
-[FPGA — Shrike Lite — XNOR Correlator]  →  single XNOR output pin
-        │
-        ▼
-[RP2040 — 23-bit counter — USB Serial to PC]
-```
+![Signal chain](signal-chain.svg)
 
 ---
 
