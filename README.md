@@ -13,7 +13,7 @@ A radio interferometer measures the correlation between signals received at two 
 
 This project implements the correlator digitally on an FPGA. The analog signal from each antenna's LNB (Low Noise Block) is amplified and downconverted to ~10 MHz, passed through a precision comparator (AD790JN) that converts it to a 1-bit digital signal (0 or 1), and then fed into the FPGA. The FPGA has two  D-type flip flop samplers and an XNOR gate for correlating the signals. The correlation output is accumulated over a 65536-cycle window and the resulting correlation counts are sent to a host PC via the onboard RP2040 microcontroller over USB.
 
-This is the same architecture used in the IIA experiment, where they describe it as a "1-bit digital correlator assembled with simple digital logic circuits." Here, all of that logic lives inside the FPGA.
+This is the same architecture used in the IIA experiment. However, here, the D-flip flops and ex-NOR correlator lie inside the FPGA.
 
 ---
 
