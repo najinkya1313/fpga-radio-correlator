@@ -16,7 +16,9 @@ This project implements the correlator digitally on an FPGA. The analog signal f
 
 ## Signal Chain
 
-![Signal chain](signal-chain.svg)
+<p align="center">
+  <img src="ku_band_signal_chain.svg" alt="Signal chain" width="700">
+</p>
 
 ---
 
