@@ -293,7 +293,6 @@ Gireesh, G.V.S., Kathiravan, C., Barve, I.V., Ramesh, R. (2021).
 Solar Physics, 296, 121.
 https://doi.org/10.1007/s11207-021-01871-9
 
-[Introduction to Shrike Project](https://vicharak-in.github.io/shrike/introduction.html)
 ---
 
 ## License
