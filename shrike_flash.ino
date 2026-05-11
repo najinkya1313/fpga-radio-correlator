@@ -20,6 +20,10 @@ void loop() {
     long count = 0;
     for (long i = 0; i < 8388608; i++) {
         count += (sio_hw->gpio_in >> xnor_pin) & 1u;
+        // Wait ~120ns for next FPGA sample (15 × 8ns = 120ns)
+        __asm volatile ("nop\nnop\nnop\nnop\nnop\n"
+                        "nop\nnop\nnop\nnop\nnop\n"
+                        "nop\nnop\nnop\nnop\nnop\n");
     }
-    Serial.println(count/8388608);
+    Serial.println((float)count / 8388608.0f, 6);
 }
