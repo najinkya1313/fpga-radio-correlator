@@ -56,7 +56,7 @@ The registered XNOR result is driven directly onto a single GPIO pin (`xnor_out`
 
 ### LED Heartbeat
 
-A 28-bit counter running on the full 50 MHz clock drives the onboard LED at approximately **0.2 Hz** (one blink every ~5 seconds) as a visual indicator that the FPGA is running.
+A 28-bit counter running on the full 50 MHz clock drives the onboard LED at approximately **0.2 Hz** (one blink every ~5 seconds) as a visual indicator that the bitstream has been successfully uploaded and running on the FPGA.
 
 ---
 
