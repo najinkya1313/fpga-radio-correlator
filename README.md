@@ -12,8 +12,6 @@ A radio interferometer measures the correlation between signals received at two 
 
 This project implements the correlator digitally on an FPGA. The analog signal from each antenna's LNB (Low Noise Block) is downconverted to a 10 MHz IF signal, passed through a precision comparator (AD790JN) that converts it to a 1-bit digital signal (0 or 1), and then fed into the FPGA. The FPGA samples both channels synchronously, computes their XNOR (1-bit correlation), and outputs the raw result on a single GPIO pin. The RP2040 microcontroller accumulates this output in software over ~8.3 million samples and reports the correlation fraction to a host PC over USB.
 
-This is the same architecture used in the IIA experiment, where they describe it as a "1-bit digital correlator assembled with simple digital logic circuits." Here, all of that logic lives inside the FPGA.
-
 ---
 
 ## Signal Chain
@@ -22,10 +20,13 @@ This is the same architecture used in the IIA experiment, where they describe it
 Ku-band sky signal (10.7–12.75 GHz)
         │
         ▼
-[Ku-band LNB — FS-336 Pro]
+[Ku-band LNB]
   Internal LO: 9.75 GHz (low band) / 10.60 GHz (high band)
   Output IF:   950–2150 MHz L-band
   Gain:        55 dB  |  Noise figure: 0.3 dB
+        │
+        ▼
+[Bias Tee (12 V)]
         │
         ▼
 [Bandpass Filter @ 1420 MHz]
@@ -49,7 +50,7 @@ Ku-band sky signal (10.7–12.75 GHz)
 [FPGA — Shrike Lite — XNOR Correlator]  →  single XNOR output pin
         │
         ▼
-[RP2040 — software accumulation — USB Serial to PC]
+[RP2040 — 23-bit counter — USB Serial to PC]
 ```
 
 ---
@@ -71,20 +72,20 @@ All sampling and XNOR logic gates on `sample_en` rather than using a divided clo
 
 ### Stage 2 — Input D Flip-Flops
 
-Two D flip-flops sample `ant_a` and `ant_b` on every `sample_en` pulse. Both channels are captured at exactly the same clock edge, providing synchronous sampling essential for coherent correlation.
+Two D flip-flops sample `ant_a` and `ant_b` on every `sample_en` pulse i.e. at 8.33 MHz. Both channels are captured at exactly the same clock edge, providing synchronous sampling essential for coherent correlation.
 
 ### Stage 3 — XNOR Gate
 
 A registered XNOR gate compares the two sampled bits on every `sample_en` pulse:
 
-- **Output = 1** when both channels agree (same polarity — correlated signal present)
-- **Output = 0** when channels disagree (different polarity — uncorrelated noise)
+- **Output = 1** when both channels agree (correlated signal present)
+- **Output = 0** when channels disagree (uncorrelated signal)
 
 Implemented as `~(dff_a ^ dff_b)` registered into `xnor_reg` — one LUT in the FPGA fabric.
 
 ### Stage 4 — Direct Output
 
-The registered XNOR result is driven directly onto a single GPIO pin (`xnor_out`) to the RP2040. There is no accumulator or window logic in the FPGA — all accumulation is handled in software on the RP2040. This keeps the FPGA design minimal and moves flexibility into software.
+The registered XNOR result is driven directly onto a single GPIO pin (`xnor_out`) to the RP2040. There is no accumulator or window logic in the FPGA. All accumulation is handled in software on the RP2040. This keeps the FPGA design minimal and moves flexibility into software.
 
 ### LED Heartbeat
 
@@ -94,7 +95,9 @@ A 28-bit counter running on the full 50 MHz clock drives the onboard LED at appr
 
 ## IO Pin Assignments
 
-Configured in the ForgeFPGA Workshop IO Planner. Only essential signals are assigned — all other GPIOs are left unconnected.
+Configured in the ForgeFPGA Workshop IO Planner. Only essential signals are assigned, all other GPIOs are left unconnected. 
+
+Pin assignments are made in the I/O planner of the Forge FPGA workshop. The GPIOxx_IN/GPIOxx_OUT/GPIOxx_OE pins correspond to the Fxx labels on the board. These pins can be configured as input/output pins in the I/O planner. Each output pin needs to be enabled by setting the output enable pins (OE pins) as high. The Shrike-Lite board also features an 8-bit interconnect bus between the FPGA and the RP2040. We use one of these interconnect pins to send the raw correlation counts to the RP2040 for integration. Refer to the [Shrike-Lite Pin Outs](https://vicharak-in.github.io/shrike/shrike_pinouts.html) for more details.
 
 ### FPGA GPIO → Physical Pin Mapping
 
@@ -109,45 +112,18 @@ Configured in the ForgeFPGA Workshop IO Planner. Only essential signals are assi
 | `led` | Output | GPIO16 | PIN 7 | 1 | Onboard LED heartbeat |
 | `led_en` | Output | GPIO16 OE | PIN 7 | — | Output enable — tied HIGH |
 
-### Full IO Planner Reference
-
-| GPIO | Physical PIN | Signal | Direction | OE Setting |
-|---|---|---|---|---|
-| GPIO0 | PIN 13 | — | — | — |
-| GPIO1 | PIN 14 | `ant_a` | Input | 0 |
-| GPIO2 | PIN 15 | `ant_b` | Input | 0 |
-| GPIO3 | PIN 16 | — | — | — |
-| GPIO4 | PIN 17 | — | — | — |
-| GPIO5 | PIN 18 | — | — | — |
-| GPIO6 | PIN 19 | `xnor_out` / `xnor_oe` | Output | 1 |
-| GPIO7 | PIN 20 | — | — | — |
-| GPIO8 | PIN 23 | — | — | — |
-| GPIO9 | PIN 24 | — | — | — |
-| GPIO10 | PIN 1 | — | — | — |
-| GPIO11 | PIN 2 | — | — | — |
-| GPIO12 | PIN 3 | — | — | — |
-| GPIO13 | PIN 4 | — | — | — |
-| GPIO14 | PIN 5 | — | — | — |
-| GPIO15 | PIN 6 | — | — | — |
-| GPIO16 | PIN 7 | `led` / `led_en` | Output | 1 |
-| GPIO17 | PIN 8 | — | — | — |
-| GPIO18 | PIN 9 | — | — | — |
-| OSC_CLK | — | `clk_in` | Input | — |
-| OSC_EN | — | `osc_en` | Output | — |
-
 ### RP2040 GPIO Mapping
 
 | RP2040 GPIO (Arduino) | Connected to | Notes |
 |---|---|---|
-| GPIO 0 | FPGA GPIO6 PIN 19 (`xnor_out`) | Single correlation bit, read via `sio_hw->gpio_in` — internal bridge, no jumper wire needed |
-
+| GPIO 0 | FPGA GPIO6 PIN 19 (`xnor_out`) | Single correlation bit, read via `sio_hw->gpio_in`.
 ---
 
 ## Comparator Front-End — AD790JN
 
 Each antenna channel uses an AD790JN precision comparator to digitise the 10 MHz IF signal.
 
-### Pin Connections
+### Comparator Pin Connections
 
 | Pin | Name | Connect To | Notes |
 |---|---|---|---|
