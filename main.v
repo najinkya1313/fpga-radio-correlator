@@ -20,11 +20,11 @@ always @(posedge clk_in)
     blink_counter <= blink_counter + 1;
 assign led = blink_counter[27];
 
-// ── Clock divider: 50MHz → 16.7MHz ───────────────────────────────────────
-reg [1:0] clk_div   = 0;
+// ── Clock divider: 50MHz → 8MHz ───────────────────────────────────────
+reg [2:0] clk_div   = 0;
 reg       sample_en = 0;
 always @(posedge clk_in) begin
-    if (clk_div == 2) begin
+    if (clk_div == 5) begin
         clk_div   <= 0;
         sample_en <= 1;
     end else begin
